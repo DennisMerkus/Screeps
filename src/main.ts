@@ -8,6 +8,8 @@ import Builder from './Builder'
 import Harvester from './Harvester'
 import Upgrader from './Upgrader'
 
+import { buildRoads } from './RoadBuilder'
+
 function createCreep(creep: Creep): MyCreep {
   switch (creep.memory.role) {
     case Role.harvester:
@@ -20,6 +22,8 @@ function createCreep(creep: Creep): MyCreep {
       throw new Error('Unhandled creep type')
   }
 }
+
+type BuildStage = 'Initial' | 'Expansion'
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
@@ -34,24 +38,32 @@ export const loop = ErrorMapper.wrapLoop(() => {
   }
 
   const harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === Role.harvester)
+  const upgraders = _.filter(Game.creeps, (creep) => creep.memory.role === Role.upgrader)
+  const builders = _.filter(Game.creeps, (creep) => creep.memory.role === Role.builder)
 
   console.log('Harvesters: ' + harvesters.length)
 
   if (harvesters.length < 2) {
     const newHarvesterName = 'Harvester' + Game.time
 
-    console.log('Spawning new harvester: ' + newHarvesterName)
+    Game.spawns.Base.spawnCreep([WORK, CARRY, MOVE], newHarvesterName, { memory: { role: Role.harvester } })
+  } else if (upgraders.length < 1) {
+    const newUpgraderName = 'Upgrader' + Game.time
 
-    Game.spawns.Spawn1.spawnCreep([WORK, CARRY, MOVE], newHarvesterName, { memory: { role: Role.harvester } })
+    Game.spawns.Base.spawnCreep([WORK, CARRY, MOVE], newUpgraderName, { memory: { role: Role.upgrader } })
+  } else if (builders.length < 2) {
+    const newBuilderName = 'Builder' + Game.time
+
+    Game.spawns.Base.spawnCreep([WORK, CARRY, MOVE], newBuilderName, { memory: { role: Role.builder } })
   }
 
-  if (Game.spawns.Spawn1.spawning) {
-    const spawningCreep = Game.creeps[Game.spawns.Spawn1.spawning.name]
+  if (Game.spawns.Base.spawning) {
+    const spawningCreep = Game.creeps[Game.spawns.Base.spawning.name]
 
-    Game.spawns.Spawn1.room.visual.text(
+    Game.spawns.Base.room.visual.text(
       '🛠️ ' + spawningCreep.memory.role,
-      Game.spawns.Spawn1.pos.x + 1,
-      Game.spawns.Spawn1.pos.y,
+      Game.spawns.Base.pos.x + 1,
+      Game.spawns.Base.pos.y,
       { align: 'left', opacity: 0.8 }
     )
   }
@@ -61,4 +73,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     creep.run()
   }
+
+  buildRoads()
 })

@@ -10,6 +10,8 @@ interface CreepMemory {
 interface Memory {
   uuid: number
   log: any
+
+  roads: { [target: string]: boolean }
 }
 
 // `global` extension samples

@@ -29,7 +29,7 @@ export abstract class MyCreep {
     if (this.creep.harvest(source) === ERR_NOT_IN_RANGE) {
       this.creep.moveTo(source, {
         visualizePathStyle: {
-          stroke: 'LemonChiffon',
+          stroke: 'Khaki',
         },
       })
     }
